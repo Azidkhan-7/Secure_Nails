@@ -15,14 +15,42 @@ from xai_compass.governance.compliance import generate_decision_id, get_current_
 st.set_page_config(
     page_title="XAI-COMPASS - AI Explainability Platform",
     page_icon="🧭",
-    layout="centered"
+    layout="wide"
 )
 
-# -- Model Selection via Sidebar --
-st.sidebar.title("Configuration")
-st.sidebar.markdown("Select an existing model to connect to the XAI-COMPASS platform.")
+# -- Custom CSS --
+st.markdown("""
+<style>
+    .main .block-container { padding-top: 2rem; padding-bottom: 2rem; }
+    .api-badge-connected { background-color: #dcfce7; color: #166534; padding: 4px 12px; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; display: inline-block; border: 1px solid #bbf7d0; }
+    .api-badge-disconnected { background-color: #fee2e2; color: #991b1b; padding: 4px 12px; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; display: inline-block; border: 1px solid #fecaca; }
+    .decision-card { background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-top: 1rem; }
+    .prediction-title { font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; margin-bottom: 0.5rem; }
+    .prediction-value { font-size: 2.5rem; font-weight: 800; color: #0f172a; margin-bottom: 0.25rem; line-height: 1.2; }
+    .probability-value { font-size: 1.25rem; color: #3b82f6; font-weight: 600; }
+    .model-info-text { font-size: 0.875rem; color: #94a3b8; margin-top: 1.5rem; }
+    .section-header { font-size: 1.125rem; font-weight: 700; color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; margin-top: 2rem; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+</style>
+""", unsafe_allow_html=True)
 
-# List models in the models directory
+# -- API Health Check --
+api_url = "http://127.0.0.1:8000"
+api_status_text = "API Connected"
+api_badge_class = "api-badge-connected"
+try:
+    health_response = requests.get(f"{api_url}/health", timeout=2)
+    if health_response.status_code != 200:
+        api_status_text = "API Error"
+        api_badge_class = "api-badge-disconnected"
+except Exception:
+    api_status_text = "API Unavailable"
+    api_badge_class = "api-badge-disconnected"
+
+# -- Sidebar (Modernized) --
+st.sidebar.markdown(f"<h2>XAI-COMPASS</h2>", unsafe_allow_html=True)
+st.sidebar.markdown(f"<div class='{api_badge_class}'>● {api_status_text}</div><br>", unsafe_allow_html=True)
+st.sidebar.markdown("---")
+
 models_dir = os.path.join("aetherdx", "model")
 os.makedirs(models_dir, exist_ok=True)
 available_models = [f for f in os.listdir(models_dir) if f.endswith(".keras") or f.endswith(".h5")]
@@ -31,7 +59,15 @@ if not available_models:
     st.sidebar.error("No models found in the 'models' folder. Please add a .keras or .h5 file.")
     st.stop()
 
-selected_model_file = st.sidebar.selectbox("Choose AI Model", available_models)
+st.sidebar.markdown("**CONFIGURATION**")
+selected_model_file = st.sidebar.selectbox("Model Selector", available_models, label_visibility="collapsed")
+
+st.sidebar.markdown("---")
+st.sidebar.markdown("**INTEGRATION DETAILS**")
+st.sidebar.caption(f"**Model:** {selected_model_file}")
+st.sidebar.caption("**Domain:** Healthcare")
+st.sidebar.caption("**Integration:** Existing AI Model via API")
+st.sidebar.caption("**XAI Engine:** Grad-CAM + LLM Templates")
 
 # -- Caching Model Loading --
 @st.cache_resource
@@ -42,60 +78,18 @@ def load_model(model_filename):
 try:
     model = load_model(selected_model_file)
 except Exception as e:
-    st.error(f"Failed to load model '{selected_model_file}': {e}")
+    st.error(f"Failed to load local model '{selected_model_file}' for XAI: {e}")
     st.stop()
 
-# -- UI Header --
-st.title("XAI-COMPASS ● System Ready")
-st.subheader("Multilingual AI Explainability & Compliance Platform")
-st.write("Make AI decisions understandable, multilingual and audit-ready.")
-st.markdown("**Explain • Translate • Verify • Audit**")
-st.markdown("---")
-
-# -- Simple Architecture Visual --
-st.markdown("""
-<div style='text-align: center; color: gray; font-size: 14px;'>
-EXISTING MODEL &rarr; MODEL CONNECTOR &rarr; XAI-COMPASS &rarr; EXPLAIN &rarr; TRANSLATE &rarr; VERIFY &rarr; AUDIT<br>
-<i>Current demonstration model: AetherDx InceptionV3</i>
-</div>
-""", unsafe_allow_html=True)
-st.markdown("---")
-
-# -- API Health Check --
-api_url = "http://127.0.0.1:8000"
-api_status_text = "🔴 Disconnected"
-try:
-    health_response = requests.get(f"{api_url}/health", timeout=2)
-    if health_response.status_code == 200:
-        api_status_text = "● Connected"
-except Exception:
-    st.error("XAI-COMPASS API is unavailable. Please start the Model Connector.\n\n`py -3.13 -m uvicorn xai_compass.api.api:app --reload --port 8000`")
+if api_status_text == "API Unavailable":
+    st.error("XAI-COMPASS API is unavailable. Please start the Model Connector.\n\npy -3.13 -m uvicorn xai_compass.api.api:app --reload --port 8000")
     st.stop()
 
-# -- Model Connector Card --
-st.markdown("### CONNECTED AI MODEL")
-st.info(f"""
-**Model:** {selected_model_file}  
-**Domain:** Healthcare  
-**Integration:** Existing AI Model via API  
-**API Status:** {api_status_text}  
-""")
-st.caption("Designed as a governance layer around existing AI/ML models. AetherDx is the current healthcare reference implementation.")
-
-# -- Future Models Section --
-with st.expander("DESIGNED FOR EXISTING AI/ML MODELS"):
-    st.markdown("""
-    **Current:**  
-    ✓ AetherDx Healthcare Model  
-    
-    **Future:**  
-    ○ Medical Imaging Models  
-    ○ Fraud Detection Models  
-    ○ Credit Risk Models  
-    ○ Insurance Risk Models  
-    """)
-
-st.markdown("---")
+# -- Main Header --
+col_head1, col_head2 = st.columns([3, 1])
+with col_head1:
+    st.markdown("<h1 style='margin-bottom: 0; padding-bottom: 0;'>XAI-COMPASS</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='font-size: 1.25rem; color: #475569; margin-top: 0;'>Multilingual Explainable AI & Compliance Platform</p>", unsafe_allow_html=True)
 
 # -- Session State Initialization --
 if 'analysis_done' not in st.session_state:
@@ -111,24 +105,28 @@ if 'xai_generated' not in st.session_state:
 if 'evidence_complete' not in st.session_state:
     st.session_state.evidence_complete = 0
 
-# -- Image Upload Section --
-st.markdown("### MODEL INPUT")
-st.write("Current reference implementation: nail-image healthcare screening.")
-uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
+# -- Main Layout --
+col_left, col_right = st.columns([1, 1.2], gap="large")
 
-if uploaded_file is not None:
-    st.image(uploaded_file, caption="Uploaded Image", use_container_width=True)
+with col_left:
+    st.markdown("<div class='section-header'>MODEL INPUT</div>", unsafe_allow_html=True)
+    uploaded_file = st.file_uploader("Upload Image", type=["jpg", "jpeg", "png"], label_visibility="collapsed")
     
-    if st.button("ANALYZE", type="primary", use_container_width=True):
-        st.session_state.decision_id = generate_decision_id()
-        st.session_state.timestamp = get_current_timestamp()
-        st.session_state.analysis_done = True
-        st.session_state.total_decisions += 1
-        
-if uploaded_file is not None and st.session_state.analysis_done:
-    with st.spinner("Analyzing image and generating explanation..."):
-        try:
-            # Save uploaded file temporarily
+    if uploaded_file is not None:
+        st.image(uploaded_file, use_container_width=True, caption="Target Image")
+        if st.button("ANALYZE IMAGE", type="primary", use_container_width=True):
+            st.session_state.decision_id = generate_decision_id()
+            st.session_state.timestamp = get_current_timestamp()
+            st.session_state.analysis_done = True
+            st.session_state.total_decisions += 1
+
+with col_right:
+    st.markdown("<div class='section-header'>AI DECISION</div>", unsafe_allow_html=True)
+    
+    if not uploaded_file or not st.session_state.analysis_done:
+        st.info("Upload an image and click 'ANALYZE IMAGE' to generate a prediction and compliance report.")
+    else:
+        with st.spinner("Analyzing via API..."):
             temp_dir = "outputs"
             os.makedirs(temp_dir, exist_ok=True)
             temp_image_path = os.path.join(temp_dir, "temp_upload.jpg")
@@ -136,7 +134,7 @@ if uploaded_file is not None and st.session_state.analysis_done:
             image = Image.open(uploaded_file).convert("RGB")
             image.save(temp_image_path)
             
-            # 1. Run API Inference (Primary Prediction)
+            # API Inference
             try:
                 with open(temp_image_path, "rb") as f:
                     response = requests.post(
@@ -150,156 +148,147 @@ if uploaded_file is not None and st.session_state.analysis_done:
                 st.error(f"API Prediction Request Failed: {req_err}")
                 st.stop()
             
-            # Use API response for AI decision
             prediction = api_result.get("display_prediction", api_result.get("prediction", "Unknown"))
-            
             confidence = api_result.get("probability", 0.0)
             confidence_percent = f"{confidence * 100:.2f}"
             
-            st.markdown("---")
+            # Render Decision Card
+            st.markdown(f"""
+            <div class='decision-card'>
+                <div class='prediction-title'>PREDICTED CLASS</div>
+                <div class='prediction-value'>{prediction}</div>
+                <div class='probability-value'>~{confidence_percent}% Probability</div>
+                <div class='model-info-text'>
+                    Model: AetherDx InceptionV3 | Decision ID: {st.session_state.decision_id}<br>
+                    Note: Model output probability does not represent medical certainty.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+if uploaded_file is not None and st.session_state.analysis_done:
+    
+    st.markdown("<div class='section-header'>EXPLAINABILITY EVIDENCE</div>", unsafe_allow_html=True)
+    
+    gradcam_success = False
+    xai_status = "Failed"
+    
+    col_xai1, col_xai2 = st.columns([1, 1], gap="large")
+    
+    with col_xai1:
+        st.markdown("**VISUAL EVIDENCE (GRAD-CAM)**")
+        try:
+            xai_dir = os.path.join("outputs", "xai")
+            os.makedirs(xai_dir, exist_ok=True)
+            cam_path = os.path.join(xai_dir, "gradcam_overlay.jpg")
             
-            # 2. Display AI Decision
-            st.markdown("### AI DECISION")
-            st.markdown(f"**Prediction:** {prediction}")
-            st.markdown(f"**Model Output Probability:** ~{confidence_percent}%")
-            st.caption("Note: Model output probability does not represent medical certainty.")
-            st.markdown(f"**Model:** {selected_model_file}")
-            st.markdown("**Domain:** Healthcare")
-            st.markdown(f"**Decision ID:** {st.session_state.decision_id}")
+            preprocessed_img_array = preprocess_image(temp_image_path)
+            heatmap, _ = generate_gradcam(model, preprocessed_img_array, layer_name="mixed10")
+            save_and_display_gradcam(temp_image_path, heatmap, cam_path=cam_path, alpha=0.4)
             
-            # 3. Explainable AI Section
-            st.markdown("---")
-            st.markdown("### WHY DID THE MODEL MAKE THIS DECISION?")
+            overlay_img = Image.open(cam_path)
             
-            gradcam_success = False
-            xai_status = "Failed"
-            try:
-                xai_dir = os.path.join("outputs", "xai")
-                os.makedirs(xai_dir, exist_ok=True)
-                cam_path = os.path.join(xai_dir, "gradcam_overlay.jpg")
+            st.image(overlay_img, use_container_width=True, caption="Model Attention Map (Heatmap Overlay)")
+            st.caption("Highlighted regions indicate image areas that contributed most strongly to the model's decision.")
+            
+            gradcam_success = True
+            xai_status = "Generated"
+            st.session_state.xai_generated = max(st.session_state.xai_generated, st.session_state.total_decisions)
+            
+        except Exception as xai_e:
+            st.error(f"XAI visualization failed: {str(xai_e)}")
+
+    with col_xai2:
+        st.markdown("**MULTILINGUAL EXPLANATION**")
+        st.caption("AI output translated for diverse users.")
+        
+        tab_en, tab_hi, tab_mr = st.tabs(["🇬🇧 English", "🇮🇳 हिंदी", "🇮🇳 मराठी"])
+        
+        en_exp = get_explanation("english", prediction, confidence_percent)
+        hi_exp = get_explanation("hindi", prediction, confidence_percent)
+        mr_exp = get_explanation("marathi", prediction, confidence_percent)
+        
+        with tab_en:
+            st.info(en_exp)
+        with tab_hi:
+            st.info(hi_exp)
+        with tab_mr:
+            st.info(mr_exp)
+            
+    st.markdown("<div class='section-header'>AI GOVERNANCE & AUDIT PLATFORM</div>", unsafe_allow_html=True)
+    
+    checklist, passed_checks, total_checks, score = evaluate_compliance_evidence(
+        has_prediction=True,
+        has_gradcam=gradcam_success,
+        has_explanation=True
+    )
+    
+    if score == 100:
+        st.session_state.evidence_complete = max(st.session_state.evidence_complete, st.session_state.total_decisions)
+        
+    col_gov1, col_gov2 = st.columns([2, 1], gap="large")
+    
+    with col_gov1:
+        st.markdown("**COMPLIANCE CHECKLIST**")
+        
+        # Grid layout for checklist (2 columns)
+        chk_cols = st.columns(2)
+        items = list(checklist.items())
+        half = len(items) // 2 + len(items) % 2
+        
+        for i, (check, status) in enumerate(items):
+            col_idx = 0 if i < half else 1
+            icon = "🟢" if status else "🔴"
+            with chk_cols[col_idx]:
+                st.markdown(f"{icon} {check}")
                 
-                preprocessed_img_array = preprocess_image(temp_image_path)
-                heatmap, _ = generate_gradcam(model, preprocessed_img_array, layer_name="mixed10")
-                save_and_display_gradcam(temp_image_path, heatmap, cam_path=cam_path, alpha=0.4)
-                
-                original_img = Image.open(temp_image_path)
-                overlay_img = Image.open(cam_path)
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.image(original_img, caption="Original Image", use_container_width=True)
-                with col2:
-                    st.image(overlay_img, caption="Grad-CAM Evidence", use_container_width=True)
-                    
-                st.info("The highlighted regions indicate image areas that contributed most strongly to the model's prediction.")
-                gradcam_success = True
-                xai_status = "Generated"
-                
-                # Update Monitoring metric
-                st.session_state.xai_generated = max(st.session_state.xai_generated, st.session_state.total_decisions)
-                
-            except Exception as xai_e:
-                st.warning("XAI visualization temporarily unavailable.")
-                st.error(f"Grad-CAM Error: {str(xai_e)}")
+    with col_gov2:
+        st.markdown("**EVIDENCE COMPLETENESS**")
+        st.metric(label="Compliance Score", value=f"{score}%", delta=f"{passed_checks}/{total_checks} Checks Passed" if score==100 else f"-{total_checks-passed_checks} Missing", delta_color="normal" if score==100 else "inverse")
+        st.caption("Indicates availability of configured explainability evidence. Not a regulatory certification.")
+        
+    st.markdown("---")
+    
+    col_audit1, col_audit2 = st.columns([1, 1], gap="large")
+    
+    with col_audit1:
+        st.markdown("**DECISION MONITORING**")
+        mon_col1, mon_col2, mon_col3 = st.columns(3)
+        with mon_col1:
+            st.metric("Total Decisions", st.session_state.total_decisions)
+        with mon_col2:
+            st.metric("XAI Generated", st.session_state.xai_generated)
+        with mon_col3:
+            st.metric("Evidence Complete", st.session_state.evidence_complete)
             
-            # 4. Multilingual Explanation
-            st.markdown("---")
-            st.markdown("### MULTILINGUAL EXPLANATION")
-            st.write("Convert technical AI output into understandable explanations for diverse users.")
-            
-            tab_en, tab_hi, tab_mr = st.tabs(["🇬🇧 English", "🇮🇳 हिंदी", "🇮🇳 मराठी"])
-            
-            en_exp = get_explanation("english", prediction, confidence_percent)
-            hi_exp = get_explanation("hindi", prediction, confidence_percent)
-            mr_exp = get_explanation("marathi", prediction, confidence_percent)
-            
-            with tab_en:
-                st.write(en_exp)
-            with tab_hi:
-                st.write(hi_exp)
-            with tab_mr:
-                st.write(mr_exp)
-                
-            # 5. AI Governance & Compliance Evidence
-            st.markdown("---")
-            st.markdown("### AI GOVERNANCE & COMPLIANCE EVIDENCE")
-            
-            checklist, passed_checks, total_checks, score = evaluate_compliance_evidence(
-                has_prediction=True,
-                has_gradcam=gradcam_success,
-                has_explanation=True
-            )
-            
-            for check, status in checklist.items():
-                if status:
-                    st.markdown(f"🟢 **{check}**")
-                else:
-                    st.markdown(f"🔴 **{check}**")
-                    
-            st.markdown(f"#### {passed_checks}/{total_checks} Evidence Checks Passed")
-            st.markdown(f"## Evidence Readiness: {score}%")
-            st.caption("This score indicates the availability of configured explainability and audit evidence. It does not constitute legal or regulatory certification.")
-            
-            # Update Evidence metric if all passed
-            if score == 100:
-                st.session_state.evidence_complete = max(st.session_state.evidence_complete, st.session_state.total_decisions)
-                
-            # 6. Decision Monitoring Panel
-            st.markdown("---")
-            st.markdown("### DECISION MONITORING")
-            st.markdown(f"**Total Decisions:** {st.session_state.total_decisions}")
-            st.markdown(f"**XAI Generated:** {st.session_state.xai_generated}")
-            st.markdown(f"**Evidence Complete:** {st.session_state.evidence_complete}")
-            st.markdown("**Human Review:** Required")
-            
-            # 7. Audit Section
-            st.markdown("---")
-            st.markdown("### AUDIT-READY DECISION RECORD")
-            
-            # Displaying audit info on screen
-            st.markdown(f"**Decision ID:** {st.session_state.decision_id}")
-            st.markdown(f"**Timestamp:** {st.session_state.timestamp}")
-            st.markdown(f"**Model:** {selected_model_file}")
-            st.markdown(f"**Prediction:** {prediction}")
-            st.markdown(f"**Model Output Probability:** ~{confidence_percent}%")
-            st.markdown("**XAI Method:** Grad-CAM")
-            st.markdown("**XAI Evidence:** Original Input, Grad-CAM Heatmap, Grad-CAM Overlay")
-            st.markdown(f"**Language:** English (Default for report)")
-            st.markdown("**Compliance Evidence:** Available")
-            
-            # Create report text
-            report_text = generate_audit_report_text(
-                decision_id=st.session_state.decision_id,
-                timestamp=st.session_state.timestamp,
-                prediction=prediction,
-                confidence=confidence_percent,
-                xai_status=xai_status,
-                explanation_lang="English",
-                explanation_text=en_exp,
-                checklist=checklist,
-                passed_checks=passed_checks,
-                total_checks=total_checks,
-                score=score,
-                model_name=selected_model_file
-            )
-            
-            st.download_button(
-                label="GENERATE AUDIT REPORT",
-                data=report_text,
-                file_name=f"XAI_COMPASS_Audit_{st.session_state.decision_id}.txt",
-                mime="text/plain",
-                type="primary",
-                use_container_width=True
-            )
-            
-        except Exception as e:
-            st.error(f"An error occurred during analysis: {e}")
-        finally:
-            if os.path.exists(temp_image_path):
-                try:
-                    os.remove(temp_image_path)
-                except:
-                    pass
+    with col_audit2:
+        st.markdown("**AUDIT-READY DECISION RECORD**")
+        st.markdown(f"**ID:** {st.session_state.decision_id} | **Time:** {st.session_state.timestamp}")
+        st.markdown(f"**AI Decision:** {prediction} (~{confidence_percent}%)")
+        st.markdown("**XAI Method:** Grad-CAM")
+        
+        report_text = generate_audit_report_text(
+            decision_id=st.session_state.decision_id,
+            timestamp=st.session_state.timestamp,
+            prediction=prediction,
+            confidence=confidence_percent,
+            xai_status=xai_status,
+            explanation_lang="English",
+            explanation_text=en_exp,
+            checklist=checklist,
+            passed_checks=passed_checks,
+            total_checks=total_checks,
+            score=score,
+            model_name=selected_model_file
+        )
+        
+        st.download_button(
+            label="📄 GENERATE AUDIT REPORT",
+            data=report_text,
+            file_name=f"XAI_COMPASS_Audit_{st.session_state.decision_id}.txt",
+            mime="text/plain",
+            type="primary",
+            use_container_width=True
+        )
 
 # -- Medical Disclaimer --
 st.markdown("---")
