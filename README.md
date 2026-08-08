@@ -1,5 +1,3 @@
-# XAi-PROMPTSPRINT
-
 # XAI-COMPASS
 
 A governance layer for existing AI/ML models — makes their decisions explainable, multilingual, and audit-ready.
