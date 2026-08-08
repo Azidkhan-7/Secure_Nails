@@ -1,0 +1,3 @@
+Healthy
+Liver_disease
+Psoriasis_disease

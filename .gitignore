@@ -1,0 +1,10 @@
+# Ignore large model files (GitHub max file size is 100MB)
+models/*.keras
+models/*.h5
+
+# Ignore outputs
+outputs/
+
+# Ignore Python caches
+__pycache__/
+*.pyc

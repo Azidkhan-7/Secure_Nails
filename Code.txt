@@ -1,0 +1,2350 @@
+Code Features for each direction
+import cv2
+import numpy as np
+from skimage.feature import graycomatrix, graycoprops
+import matplotlib.pyplot as plt
+
+# List of image paths
+image_paths = [
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\1.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\2.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\3.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\4.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\5.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\6.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\7.jfif',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\8.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\9.jfif',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\10.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\11.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\12.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\13.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\14.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\15.jpg'
+]
+
+# Initialize lists to store GLCM features
+contrasts = []
+dissimilarities = []
+homogeneities = []
+energies = []
+correlations = []
+
+for image_path in image_paths:
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Check if the image was loaded
+    if image is None:
+        print(f"Failed to load image at {image_path}")
+        continue
+    else:
+        print(f"Image loaded successfully from {image_path}")
+
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Threshold the image to binary using Otsu's method
+    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # Find contours in the binary image
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Assume largest contour is the nail
+    nail_contour = max(contours, key=cv2.contourArea)
+
+    # Create an empty mask to store the segmented nail
+    mask = np.zeros_like(gray)
+
+    # Draw the nail contour on the mask
+    cv2.drawContours(mask, [nail_contour], -1, (255), thickness=cv2.FILLED)
+
+    # Bitwise-and with the original image to get segmented nail
+    segmented_nail = cv2.bitwise_and(gray, gray, mask=mask)
+
+    # Calculate GLCM features
+    glcm = graycomatrix(segmented_nail, [1], [0, np.pi/4, np.pi/2, 3*np.pi/4])
+    contrasts.append(graycoprops(glcm, 'contrast')[0])
+    dissimilarities.append(graycoprops(glcm, 'dissimilarity')[0])
+    homogeneities.append(graycoprops(glcm, 'homogeneity')[0])
+    energies.append(graycoprops(glcm, 'energy')[0])
+    correlations.append(graycoprops(glcm, 'correlation')[0])
+
+# Plot GLCM features separately
+plt.figure(figsize=(10, 6))
+plt.plot(contrasts, label='Contrast')
+plt.legend()
+plt.title('Contrast')
+plt.xlabel('Image Index')
+plt.ylabel('Feature Value')
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(dissimilarities, label='Dissimilarity')
+plt.legend()
+plt.title('Dissimilarity')
+plt.xlabel('Image Index')
+plt.ylabel('Feature Value')
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(homogeneities, label='Homogeneity')
+plt.legend()
+plt.title('Homogeneity')
+plt.xlabel('Image Index')
+plt.ylabel('Feature Value')
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(energies, label='Energy')
+plt.legend()
+plt.title('Energy')
+plt.xlabel('Image Index')
+plt.ylabel('Feature Value')
+plt.show()
+
+plt.figure(figsize=(10, 6))
+plt.plot(correlations, label='Correlation')
+plt.legend()
+plt.title('Correlation')
+plt.xlabel('Image Index')
+plt.ylabel('Feature Value')
+plt.show()
+
+Code Range including all direction
+import cv2
+import numpy as np
+from skimage.feature import graycomatrix, graycoprops
+import matplotlib.pyplot as plt
+
+# List of image paths
+image_paths = [
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\1.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\2.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\3.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\4.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\5.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\6.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\7.jfif',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\8.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\9.jfif',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\10.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\11.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\12.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\13.png',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\14.jpg',
+    'E:\\Sem 5\\college research internship\\code\\GLCM\\pitted nails\\15.jpg'
+]
+
+# Dictionary to store the features for each image
+features = {
+    'contrast': [],
+    'dissimilarity': [],
+    'homogeneity': [],
+    'energy': [],
+    'correlation': []
+}
+
+for image_path in image_paths:
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Check if the image was loaded
+    if image is None:
+        print(f"Failed to load image at {image_path}")
+        continue
+    else:
+        print(f"Image loaded successfully from {image_path}")
+
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Threshold the image to binary using Otsu's method
+    _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    # Find contours in the binary image
+    contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Assume largest contour is the nail
+    nail_contour = max(contours, key=cv2.contourArea)
+
+    # Create an empty mask to store the segmented nail
+    mask = np.zeros_like(gray)
+
+    # Draw the nail contour on the mask
+    cv2.drawContours(mask, [nail_contour], -1, (255), thickness=cv2.FILLED)
+
+    # Bitwise-and with the original image to get segmented nail
+    segmented_nail = cv2.bitwise_and(gray, gray, mask=mask)
+
+    # Calculate GLCM features
+    glcm = graycomatrix(segmented_nail, [1], [0, np.pi/4, np.pi/2, 3*np.pi/4, np.pi])
+    for i in range(5):  # loop over each direction
+        features['contrast'].append(graycoprops(glcm, 'contrast')[0][i])
+        features['dissimilarity'].append(graycoprops(glcm, 'dissimilarity')[0][i])
+        features['homogeneity'].append(graycoprops(glcm, 'homogeneity')[0][i])
+        features['energy'].append(graycoprops(glcm, 'energy')[0][i])
+        features['correlation'].append(graycoprops(glcm, 'correlation')[0][i])
+
+# Calculate the range for each feature
+for feature, values in features.items():
+    print(f"{feature.capitalize()} Range: {max(values) - min(values)} = {min(values)} - {max(values)}")
+
+Code Basic Disease detection by comparing GLCM factor values
+import cv2
+import numpy as np
+from skimage.feature import graycomatrix, graycoprops
+import matplotlib.pyplot as plt
+
+# Load the image
+image_path = 'E:\\Sem 5\\college research internship\\code\\GLCM\\brittle nails\\1.jpg'
+image = cv2.imread(image_path)
+
+# Check if the image was loaded
+if image is None:
+    print(f"Failed to load image at {image_path}")
+else:
+    print(f"Image loaded successfully from {image_path}")
+
+# Convert the image to grayscale
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Display the grayscale image
+plt.imshow(gray, cmap='gray')
+plt.title('Grayscale Image')
+plt.show()
+
+# Threshold the image to binary using Otsu's method
+_, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+# Find contours in the binary image
+contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# Assume largest contour is the nail
+nail_contour = max(contours, key=cv2.contourArea)
+
+# Create an empty mask to store the segmented nail
+mask = np.zeros_like(gray)
+
+# Draw the nail contour on the mask
+cv2.drawContours(mask, [nail_contour], -1, (255), thickness=cv2.FILLED)
+
+# Bitwise-and with the original image to get segmented nail
+segmented_nail = cv2.bitwise_and(gray, gray, mask=mask)
+
+# Display the segmented image
+plt.imshow(segmented_nail, cmap='gray')
+plt.title('Segmented Image')
+plt.show()
+
+# Calculate GLCM features
+glcm = graycomatrix(segmented_nail, [1], [0, np.pi/4, np.pi/2, 3*np.pi/4])
+contrast = graycoprops(glcm, 'contrast')[0][0]
+dissimilarity = graycoprops(glcm, 'dissimilarity')[0][0]
+homogeneity = graycoprops(glcm, 'homogeneity')[0][0]
+energy = graycoprops(glcm, 'energy')[0][0]
+correlation = graycoprops(glcm, 'correlation')[0][0]
+
+print('Contrast: ', contrast)
+print('Dissimilarity: ', dissimilarity)
+print('Homogeneity: ', homogeneity)
+print('Energy: ', energy)
+print('Correlation: ', correlation)
+
+# Define the GLCM parameter ranges for brittle nail disease
+contrast_range = (128.97066543771544, 1172.5499959451863)
+dissimilarity_range = (3.095597811930181, 8.357635228286414)
+homogeneity_range = (0.3769009123020746, 0.6019325778600543)
+energy_range = (0.08239864432757879, 0.38462614185291305)
+correlation_range = (0.9435791434821842, 0.9861222348738147)
+
+# Check if the GLCM parameters fall within the defined ranges
+if contrast_range[0] <= contrast <= contrast_range[1] and \
+   dissimilarity_range[0] <= dissimilarity <= dissimilarity_range[1] and \
+   homogeneity_range[0] <= homogeneity <= homogeneity_range[1] and \
+   energy_range[0] <= energy <= energy_range[1] and \
+   correlation_range[0] <= correlation <= correlation_range[1]:
+    print("The nail is predicted to be related to brittle nail disease.")
+else:
+    print("The nail is not predicted to be related to brittle nail disease.")
+
+
+1 CNN 
+Code for above cnn model
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
+# Set GPU device
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(e)
+
+# Image dimensions
+IMG_WIDTH, IMG_HEIGHT = 256, 256
+BATCH_SIZE = 16
+EPOCHS = 50
+
+# Data directories
+TRAIN_DIR = 'dataset/train'
+VALIDATION_DIR = 'dataset/validation'
+TEST_DIR = 'dataset/test'
+
+# Data generators
+train_datagen = ImageDataGenerator(rescale=1./255)
+validation_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    TRAIN_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    VALIDATION_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    TEST_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Flatten(),
+    Dense(512, activation='relu'),
+    Dropout(0.5),  # You can tune dropout rate here
+    Dense(train_generator.num_classes, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.001),  # You can tune learning rate here
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Callbacks
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('cnn0_best_model.keras', save_best_only=True)
+
+# Train the model
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // BATCH_SIZE,
+    epochs=EPOCHS,
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // BATCH_SIZE,
+    callbacks=[early_stopping, model_checkpoint],
+    verbose=1  # You can adjust verbosity here
+)
+
+# Evaluate the model
+model.load_weights('cnn0_best_model.keras')
+train_loss, train_acc = model.evaluate(train_generator)
+val_loss, val_acc = model.evaluate(validation_generator)
+test_loss, test_acc = model.evaluate(test_generator)
+
+print(f'Train accuracy: {train_acc*100:.2f}%')
+print(f'Validation accuracy: {val_acc*100:.2f}%')
+print(f'Test accuracy: {test_acc*100:.2f}%')
+
+# Plot accuracy and loss
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='train_accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='train_loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# Confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+conf_mat = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(8, 8))
+sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues',
+            xticklabels=test_generator.class_indices.keys(),
+            yticklabels=test_generator.class_indices.keys())
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Classification report
+print(classification_report(y_true, y_pred, target_names=test_generator.class_indices.keys()))
+
+# Save the model
+model.save('cnn0.keras')
+
+2CNN 
+Train accuracy: 81.22%
+code for above cnn model
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
+# Set GPU device
+gpus = tf.config.experimental.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+    except RuntimeError as e:
+        print(e)
+
+# Image dimensions
+IMG_WIDTH, IMG_HEIGHT = 128, 128  # Reduced dimensions to lower memory usage
+BATCH_SIZE = 16  # Reduced batch size to lower memory usage
+EPOCHS = 50
+
+# Data directories
+TRAIN_DIR = 'dataset/train'
+VALIDATION_DIR = 'dataset/validation'
+TEST_DIR = 'dataset/test'
+
+# Data generators
+train_datagen = ImageDataGenerator(rescale=1./255)
+validation_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    TRAIN_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    VALIDATION_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    TEST_DIR,
+    target_size=(IMG_WIDTH, IMG_HEIGHT),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# CNN model
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(IMG_WIDTH, IMG_HEIGHT, 3)),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D(pool_size=(2, 2)),
+    Flatten(),
+    Dense(256, activation='relu'),  # Reduced number of neurons to lower memory usage
+    Dropout(0.5),  # You can tune dropout rate here
+    Dense(train_generator.num_classes, activation='softmax')
+])
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.001),  # You can tune learning rate here
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Callbacks
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('cnn00_best_model.keras', save_best_only=True)
+
+# Train the model
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // BATCH_SIZE,
+    epochs=EPOCHS,
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // BATCH_SIZE,
+    callbacks=[early_stopping, model_checkpoint],
+    verbose=1  # You can adjust verbosity here
+)
+
+# Evaluate the model
+model.load_weights('cnn00_best_model.keras')
+train_loss, train_acc = model.evaluate(train_generator)
+val_loss, val_acc = model.evaluate(validation_generator)
+test_loss, test_acc = model.evaluate(test_generator)
+
+print(f'Train accuracy: {train_acc*100:.2f}%')
+print(f'Validation accuracy: {val_acc*100:.2f}%')
+print(f'Test accuracy: {test_acc*100:.2f}%')
+
+# Plot accuracy and loss
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='train_accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='train_loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.show()
+
+# Confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+conf_mat = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(8, 8))
+sns.heatmap(conf_mat, annot=True, fmt='d', cmap='Blues',
+            xticklabels=test_generator.class_indices.keys(),
+            yticklabels=test_generator.class_indices.keys())
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Classification report
+print(classification_report(y_true, y_pred, target_names=test_generator.class_indices.keys()))
+
+# Save the model
+model.save('cnn00.keras')
+
+iNCEPTIONv3
+code for above inceptionV3
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Define directories
+train_dir = 'dataset/train/'
+validation_dir = 'dataset/validation/'
+test_dir = 'dataset/test/'
+
+# Image data generators
+train_datagen = ImageDataGenerator(
+    rescale=1./255
+)
+
+validation_datagen = ImageDataGenerator(
+    rescale=1./255
+)
+
+test_datagen = ImageDataGenerator(
+    rescale=1./255
+)
+
+# Data generators
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(224, 224),  # Adjusted to 224x224
+    batch_size=16,  # Reduced batch size
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(224, 224),  # Adjusted to 224x224
+    batch_size=16,  # Reduced batch size
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(224, 224),  # Adjusted to 224x224
+    batch_size=16,  # Reduced batch size
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Enable mixed precision
+tf.keras.mixed_precision.set_global_policy('mixed_float16')
+
+# Load the InceptionV3 model, pre-trained on ImageNet
+base_model = InceptionV3(weights='imagenet', include_top=False)
+
+# Add custom layers on top of the base model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)  # Tunable: number of units, activation function
+x = Dropout(0.5)(x)  # Tunable: dropout rate
+predictions = Dense(3, activation='softmax', dtype='float32')(x)  # Tunable: number of classes, activation function
+
+# Define the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Freeze the base model layers
+for layer in base_model.layers:
+    layer.trainable = False  # Tunable: set to True to fine-tune base model layers
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.001),  # Tunable: optimizer, learning rate
+              loss='categorical_crossentropy',  # Tunable: loss function
+              metrics=['accuracy'])  # Tunable: metrics
+
+# Train the model
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    epochs=20,  # Tunable: number of epochs
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // validation_generator.batch_size,
+    verbose=1  # Tunable: verbosity level
+)
+
+# Unfreeze the base model layers for fine-tuning
+for layer in base_model.layers:
+    layer.trainable = True
+
+# Recompile the model with a lower learning rate
+model.compile(optimizer=Adam(learning_rate=1e-5),  # Tunable: learning rate
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Fine-tune the model
+history_fine = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    epochs=10,  # Tunable: number of fine-tuning epochs
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // validation_generator.batch_size,
+    verbose=1
+)
+
+# Evaluate the model on the test data
+test_loss, test_acc = model.evaluate(test_generator, steps=test_generator.samples // test_generator.batch_size)
+print(f'Test Accuracy: {test_acc}')
+
+# Plot the training history
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='train_accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.plot(history_fine.history['accuracy'], label='train_accuracy_fine')
+plt.plot(history_fine.history['val_accuracy'], label='val_accuracy_fine')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='train_loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.plot(history_fine.history['loss'], label='train_loss_fine')
+plt.plot(history_fine.history['val_loss'], label='val_loss_fine')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Confusion matrix
+Y_pred = model.predict(test_generator, test_generator.samples // test_generator.batch_size + 1)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+cm = confusion_matrix(y_true, y_pred)
+cm_plot_labels = ['Healthy', 'Liver_disease', 'Nail_Psoriasis']
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=cm_plot_labels, yticklabels=cm_plot_labels)
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Classification report
+print(classification_report(y_true, y_pred, target_names=cm_plot_labels))
+
+# Save the model
+model.save('Inception0.keras')
+
+3MobileNetV2
+Test Accuracy: 0.7857
+
+
+Code for above MobileNetV2
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Set the image resolution
+IMG_HEIGHT = 256
+IMG_WIDTH = 256
+IMG_CHANNELS = 3
+BATCH_SIZE = 16
+EPOCHS = 50  # Adjust based on overfitting/underfitting
+
+# Data preprocessing
+train_datagen = ImageDataGenerator(
+    rescale=1.0/255.0,
+    validation_split=0.2
+)
+
+test_datagen = ImageDataGenerator(rescale=1.0/255.0)
+
+train_generator = train_datagen.flow_from_directory(
+    'dataset/train',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='training'
+)
+
+validation_generator = train_datagen.flow_from_directory(
+    'dataset/train',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    subset='validation'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    'dataset/test',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the MobileNetV2 model
+base_model = MobileNetV2(input_shape=(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS), include_top=False, weights='imagenet')
+
+# Freeze the base model
+base_model.trainable = False
+
+# Add custom layers on top
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))(x)  # L2 regularization
+x = Dropout(0.6)(x)  # Dropout
+x = Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001))(x)  # L2 regularization
+x = Dropout(0.6)(x)  # Dropout
+predictions = Dense(train_generator.num_classes, activation='softmax')(x)  # Output layer
+
+# Define the complete model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+optimizer = Adam(learning_rate=1e-4)  # Can tune the learning rate and optimizer
+model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Callbacks for early stopping and saving the best model
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('MobileNetV200_model.keras', save_best_only=True, monitor='val_loss')
+
+# Train the model
+history = model.fit(
+    train_generator,
+    epochs=EPOCHS,
+    validation_data=validation_generator,
+    callbacks=[early_stopping, model_checkpoint],
+    verbose=1  # Adjust verbosity (0, 1, 2)
+)
+
+# Save the final model
+model.save('MobileNetV200.keras')
+
+# Evaluate the model on test data
+test_loss, test_accuracy = model.evaluate(test_generator, verbose=1)
+print(f'Test Accuracy: {test_accuracy:.4f}')
+
+# Generate predictions and plot confusion matrix
+y_true = test_generator.classes
+y_pred = np.argmax(model.predict(test_generator), axis=1)
+
+cm = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(10, 8))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=test_generator.class_indices, yticklabels=test_generator.class_indices)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Classification report
+target_names = list(test_generator.class_indices.keys())
+print(classification_report(y_true, y_pred, target_names=target_names))
+
+# Plot training & validation accuracy values
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+
+# Plot training & validation loss values
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
+
+Inceptionresnetv2
+
+code for above inceptionresnetV2
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import InceptionResNetV2
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+
+# Set the image resolution and batch size
+IMG_HEIGHT, IMG_WIDTH = 256, 256
+BATCH_SIZE = 32
+EPOCHS = 50  # Tune the number of epochs
+
+# Set the paths for the dataset
+train_dir = 'dataset/train'
+validation_dir = 'dataset/validation'
+test_dir = 'dataset/test'
+
+# Create ImageDataGenerator for training, validation, and testing
+train_datagen = ImageDataGenerator(rescale=1./255)
+validation_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the InceptionResNetV2 model with pre-trained weights
+base_model = InceptionResNetV2(weights='imagenet', include_top=False, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3))
+
+# Freeze the base model
+for layer in base_model.layers:
+    layer.trainable = False
+
+# Add custom layers on top of the base model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dropout(0.5)(x)  # Tune the dropout rate
+x = Dense(1024, activation='relu')(x)  # Tune the number of units and activation function
+predictions = Dense(train_generator.num_classes, activation='softmax')(x)
+
+# Compile the model
+model = Model(inputs=base_model.input, outputs=predictions)
+model.compile(optimizer=Adam(learning_rate=1e-4),  # Tune the learning rate
+              loss='categorical_crossentropy', 
+              metrics=['accuracy'])
+
+# Set callbacks
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('InceptionResnetV20_best_model.keras', save_best_only=True)
+
+# Train the model
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // BATCH_SIZE,
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // BATCH_SIZE,
+    epochs=EPOCHS,
+    callbacks=[early_stopping, model_checkpoint],
+    verbose=1  # Tune the verbosity level
+)
+
+# Load the best model
+model.load_weights('InceptionResnetV20_best_model.keras')
+
+# Evaluate the model on the test set
+test_loss, test_accuracy = model.evaluate(test_generator)
+print(f'Test Accuracy: {test_accuracy * 100:.2f}%')
+
+# Plot the training and validation accuracy and loss
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Validation Accuracy')
+plt.title('Training and Validation Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Validation Loss')
+plt.title('Training and Validation Loss')
+plt.legend()
+
+plt.show()
+
+# Predict the classes of the test set
+y_pred = np.argmax(model.predict(test_generator), axis=-1)
+y_true = test_generator.classes
+
+# Generate the confusion matrix
+cm = confusion_matrix(y_true, y_pred)
+cmd = ConfusionMatrixDisplay(cm, display_labels=test_generator.class_indices.keys())
+cmd.plot()
+plt.show()
+
+# Print the classification report
+report = classification_report(y_true, y_pred, target_names=test_generator.class_indices.keys())
+print(report)
+
+# Save the model in .keras format
+model.save('InceptionResnetV20.keras')
+
+Final model with augmented data
+InceptionV3
+
+code for above InceptionV3
+import os
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications.inception_v3 import InceptionV3
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.optimizers import Adam
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Define directories
+train_dir = 'dataset/train/'
+validation_dir = 'dataset/validation/'
+test_dir = 'dataset/test/'
+
+# Image data generators
+train_datagen = ImageDataGenerator(rescale=1./255)
+validation_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+# Data generators
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(256, 256),
+    batch_size=32,  # Tunable: batch size
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    validation_dir,
+    target_size=(256, 256),
+    batch_size=32,  # Tunable: batch size
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(256, 256),
+    batch_size=32,  # Tunable: batch size
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the InceptionV3 model, pre-trained on ImageNet
+base_model = InceptionV3(weights='imagenet', include_top=False, input_shape=(256, 256, 3))
+
+# Add custom layers on top of the base model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)  # Tunable: number of units, activation function
+x = Dropout(0.5)(x)  # Tunable: dropout rate
+predictions = Dense(3, activation='softmax')(x)  # Tunable: number of classes, activation function
+
+# Define the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Freeze the base model layers
+for layer in base_model.layers:
+    layer.trainable = False  # Tunable: set to True to fine-tune base model layers
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.001),  # Tunable: optimizer, learning rate
+              loss='categorical_crossentropy',  # Tunable: loss function
+              metrics=['accuracy'])  # Tunable: metrics
+
+# Train the model
+history = model.fit(
+    train_generator,
+    steps_per_epoch=train_generator.samples // train_generator.batch_size,
+    epochs=20,  # Tunable: number of epochs
+    validation_data=validation_generator,
+    validation_steps=validation_generator.samples // validation_generator.batch_size,
+    verbose=1  # Tunable: verbosity level
+)
+
+# Evaluate the model on the test data
+test_loss, test_acc = model.evaluate(test_generator, steps=test_generator.samples // test_generator.batch_size)
+print(f'Test Accuracy: {test_acc * 100:.2f}%')
+
+# Plot the training history
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='train_accuracy')
+plt.plot(history.history['val_accuracy'], label='val_accuracy')
+plt.title('Training and Validation Accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='train_loss')
+plt.plot(history.history['val_loss'], label='val_loss')
+plt.title('Training and Validation Loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+
+plt.tight_layout()
+plt.show()
+
+# Confusion matrix
+Y_pred = model.predict(test_generator, steps=test_generator.samples // test_generator.batch_size + 1)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+cm = confusion_matrix(y_true, y_pred)
+cm_plot_labels = ['Healthy', 'Liver_disease', 'Nail_Psoriasis']
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=cm_plot_labels, yticklabels=cm_plot_labels)
+plt.title('Confusion Matrix')
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Classification report
+print(classification_report(y_true, y_pred, target_names=cm_plot_labels))
+
+# Save the model
+model.save('Inception0.keras')
+
+MobileNet
+
+Code for above MobileNet model
+import tensorflow as tf
+from tensorflow.keras.applications import MobileNet
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Directories
+train_dir = 'dataset/train'
+valid_dir = 'dataset/validation'
+test_dir = 'dataset/test'
+
+# Image resolution
+img_height, img_width = 224, 224  # Adjusted to 224x224 to match MobileNet's default
+
+# Preprocessing the dataset
+train_datagen = ImageDataGenerator(rescale=1.0/255.0)
+valid_datagen = ImageDataGenerator(rescale=1.0/255.0)
+test_datagen = ImageDataGenerator(rescale=1.0/255.0)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(img_height, img_width),
+    batch_size=32,  # Tuning parameter
+    class_mode='categorical'
+)
+
+valid_generator = valid_datagen.flow_from_directory(
+    valid_dir,
+    target_size=(img_height, img_width),
+    batch_size=32,  # Tuning parameter
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(img_height, img_width),
+    batch_size=32,  # Tuning parameter
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the MobileNet model
+base_model = MobileNet(weights='imagenet', include_top=False, input_shape=(img_height, img_width, 3))
+
+# Freeze the base model
+base_model.trainable = False
+
+# Add custom layers
+x = base_model.output
+x = GlobalAveragePooling2D()(x)  # Tuning parameter: pooling type
+x = Dense(1024, activation='relu')(x)  # Tuning parameter: dense units and activation function
+predictions = Dense(3, activation='softmax')(x)  # Output layer, adjust units for number of classes
+
+# Create the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+model.compile(optimizer='adam',  # Tuning parameter: optimizer
+              loss='categorical_crossentropy',  # Tuning parameter: loss function
+              metrics=['accuracy'])  # Tuning parameter: evaluation metrics
+
+# Train the model
+history = model.fit(
+    train_generator,
+    epochs=20,  # Tuning parameter: number of epochs
+    validation_data=valid_generator,
+    verbose=1  # Tuning parameter: verbosity level
+)
+
+# Save the model
+model.save('fingernail_disease_model_mobilenet_01.keras')
+
+# Evaluate the model
+loss, accuracy = model.evaluate(test_generator)
+print(f'Test Accuracy: {accuracy*100:.2f}%')
+
+# Predictions
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_true, y_pred)
+class_names = list(test_generator.class_indices.keys())
+
+# Plot Confusion Matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Classification Report
+print(classification_report(y_true, y_pred, target_names=class_names))
+
+# Plot training & validation accuracy and loss
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs_range = range(len(acc))
+
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+
+MobileNetV2
+Code for above MobileNetV2 mobilenetV2 model
+import numpy as np
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import MobileNetV2
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Set the image resolution
+IMG_HEIGHT = 256
+IMG_WIDTH = 256
+IMG_CHANNELS = 3
+BATCH_SIZE = 32
+EPOCHS = 50  # Adjust based on overfitting/underfitting
+
+# Data preprocessing
+train_datagen = ImageDataGenerator(
+    rescale=1.0/255.0
+)
+
+validation_datagen = ImageDataGenerator(rescale=1.0/255.0)
+test_datagen = ImageDataGenerator(rescale=1.0/255.0)
+
+train_generator = train_datagen.flow_from_directory(
+    'dataset/train',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+validation_generator = validation_datagen.flow_from_directory(
+    'dataset/validation',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    'dataset/test',
+    target_size=(IMG_HEIGHT, IMG_WIDTH),
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the MobileNetV2 model
+base_model = MobileNetV2(input_shape=(IMG_HEIGHT, IMG_WIDTH, IMG_CHANNELS), include_top=False, weights='imagenet')
+
+# Freeze the base model
+base_model.trainable = False
+
+# Add custom layers on top
+x = base_model.output
+x = GlobalAveragePooling2D()(x)  # Pooling layer
+x = Dense(1024, activation='relu')(x)  # Tunable: number of units, activation function
+x = Dropout(0.5)(x)  # Tunable: dropout rate
+x = Dense(512, activation='relu')(x)  # Tunable: number of units, activation function
+x = Dropout(0.5)(x)  # Tunable: dropout rate
+predictions = Dense(train_generator.num_classes, activation='softmax')(x)  # Output layer
+
+# Define the complete model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+optimizer = Adam(learning_rate=1e-4)  # Tunable: optimizer, learning rate
+model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Callbacks for early stopping and saving the best model
+early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+model_checkpoint = ModelCheckpoint('MobileNetV2_best_model.keras', save_best_only=True, monitor='val_loss')
+
+# Train the model
+history = model.fit(
+    train_generator,
+    epochs=EPOCHS,  # Tunable: number of epochs
+    validation_data=validation_generator,
+    callbacks=[early_stopping, model_checkpoint],
+    verbose=1  # Tunable: verbosity level (0, 1, 2)
+)
+
+# Save the final model
+model.save('MobileNetV2_final_model.keras')
+
+# Evaluate the model on test data
+test_loss, test_accuracy = model.evaluate(test_generator, verbose=1)
+print(f'Test Accuracy: {test_accuracy:.4f}')
+
+# Generate predictions and plot confusion matrix
+y_true = test_generator.classes
+y_pred = np.argmax(model.predict(test_generator), axis=1)
+
+cm = confusion_matrix(y_true, y_pred)
+plt.figure(figsize=(10, 8))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=test_generator.class_indices.keys(), yticklabels=test_generator.class_indices.keys())
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Classification report
+target_names = list(test_generator.class_indices.keys())
+print(classification_report(y_true, y_pred, target_names=target_names))
+
+# Plot training & validation accuracy values
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+
+# Plot training & validation loss values
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper left')
+plt.show()
+
+
+Final model with hyperparameters tuned and augmented data
+InceptionV3 
+Code for above InceptionV3 model
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import InceptionV3
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.metrics import classification_report, confusion_matrix
+import os
+
+# Define paths for training, validation, and test datasets
+train_dir =  r'E:\Sem 5\college research internship\convolutional neural network\final model with augmented data\dataset\train'
+val_dir =  r'E:\Sem 5\college research internship\convolutional neural network\final model with augmented data\dataset\validation'
+test_dir = r'E:\Sem 5\college research internship\convolutional neural network\final model with augmented data\dataset\test'
+
+# Image data generators without augmentation
+train_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+# Data generators
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(299, 299), batch_size=32, class_mode='categorical')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(299, 299), batch_size=32, class_mode='categorical')
+test_generator = test_datagen.flow_from_directory(test_dir, target_size=(299, 299), batch_size=32, class_mode='categorical', shuffle=False)
+
+# Load the InceptionV3 model with pre-trained weights
+base_model = InceptionV3(weights='imagenet', include_top=False)
+
+# Add new layers on top of the base model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)
+predictions = Dense(3, activation='softmax')(x)
+
+# Define the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(train_generator, epochs=20, validation_data=val_generator)
+
+# Save the model
+model.save('Inception11.keras')
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(test_generator)
+print(f'Test accuracy: {test_accuracy}')
+
+# Generate classification report and confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+true_classes = test_generator.classes
+class_labels = list(test_generator.class_indices.keys())
+
+print('Classification Report')
+print(classification_report(true_classes, y_pred, target_names=class_labels))
+
+print('Confusion Matrix')
+cm = confusion_matrix(true_classes, y_pred)
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_labels, yticklabels=class_labels)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Plot accuracy and loss graphs
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(20)
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+Detection using final trained model on real world data
+
+Disease Detection code
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img, img_to_array
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# Load the saved model
+model = tf.keras.models.load_model('Inception11.keras')
+
+# Define the class labels (based on your training data)
+class_labels = ['Healthy', 'Liver_disease', 'Nail_Psoriasis']
+
+# Function to preprocess and predict the class of a single image
+def predict_image(image_path, model, class_labels):
+    # Load and display the input image
+    img = load_img(image_path, target_size=(299, 299))
+    plt.imshow(img)
+    plt.title("Input Image")
+    plt.axis('off')
+    plt.show()
+    
+    # Preprocess the image
+    img_array = img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)  # Expand dimensions to match the shape of the training data
+    img_array = img_array / 255.0  # Normalize the image
+
+    # Predict the class
+    prediction = model.predict(img_array)
+    predicted_class = np.argmax(prediction, axis=1)
+    predicted_class_label = class_labels[predicted_class[0]]
+
+    # Display the processed image and prediction
+    plt.imshow(img)
+    plt.title(f"Processed Image - Predicted: {predicted_class_label}")
+    plt.axis('off')
+    plt.show()
+
+    return predicted_class_label
+
+# Usage
+image_path = r'E:\Sem 5\college research internship\convolutional neural network\old dataset\Nail_Psoriais_Images\photo_6208343169188347914_y.jpg'  # Replace with your image path
+predicted_label = predict_image(image_path, model, class_labels)
+print(f'Predicted Label: {predicted_label}')
+
+
+Github repositories link for code related to research
+https://github.com/bhuvanpatle/Research
+
+
+Code
+Wavelet Transform
+
+import cv2
+import numpy as np
+import pywt
+import matplotlib.pyplot as plt
+
+# Step 1: Load the image
+image_path = r'D:\CNN_model\Fingernail Disease Detection Model_01\Train\Psorasis_Disease\brittle nails\1.jpg'  # Path to your fingernail image
+image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+
+if image is None:
+    print(f"Error: Unable to load image from {image_path}")
+else:
+    # Step 2: Preprocess the image (resize if needed)
+    image = cv2.resize(image, (256, 256))
+
+    # Step 3: Perform wavelet transform
+    wavelet = 'db1'  # You can choose different wavelet types such as 'haar', 'db2', etc.
+    coeffs = pywt.wavedec2(image, wavelet, level=2)
+
+    # coeffs contains the approximation and detail coefficients
+    cA2, (cH2, cV2, cD2), (cH1, cV1, cD1) = coeffs
+
+    # Obtain the Level 1 approximation coefficients directly from the decomposition
+    cA1 = pywt.idwt2((cA2, (None, None, None)), wavelet)
+
+    # Step 4: Visualize the wavelet coefficients for both levels at once
+    def plot_wavelet_coeffs(cA1, cH1, cV1, cD1, cA2, cH2, cV2, cD2):
+        fig, axs = plt.subplots(3, 4, figsize=(16, 12))
+
+        # Original Image
+        axs[0, 0].imshow(image, cmap='gray')
+        axs[0, 0].set_title('Original Image')
+        axs[0, 1].axis('off')
+        axs[0, 2].axis('off')
+        axs[0, 3].axis('off')
+        
+        # Level 1 coefficients
+        axs[1, 0].imshow(cA1, cmap='gray')
+        axs[1, 0].set_title('Level 1 Approximation')
+        axs[1, 1].imshow(cH1, cmap='gray')
+        axs[1, 1].set_title('Level 1 Horizontal')
+        axs[1, 2].imshow(cV1, cmap='gray')
+        axs[1, 2].set_title('Level 1 Vertical')
+        axs[1, 3].imshow(cD1, cmap='gray')
+        axs[1, 3].set_title('Level 1 Diagonal')
+
+        # Level 2 coefficients
+        axs[2, 0].imshow(cA2, cmap='gray')
+        axs[2, 0].set_title('Level 2 Approximation')
+        axs[2, 1].imshow(cH2, cmap='gray')
+        axs[2, 1].set_title('Level 2 Horizontal')
+        axs[2, 2].imshow(cV2, cmap='gray')
+        axs[2, 2].set_title('Level 2 Vertical')
+        axs[2, 3].imshow(cD2, cmap='gray')
+        axs[2, 3].set_title('Level 2 Diagonal')
+        
+        for ax in axs.flat:
+            ax.axis('off')
+        plt.tight_layout()
+        plt.show()
+
+    plot_wavelet_coeffs(cA1, cH1, cV1, cD1, cA2, cH2, cV2, cD2)
+
+    # Step 5: Analyze the wavelet coefficients
+    # For example, compute the energy of the detail coefficients
+    def compute_energy(coeffs):
+        return np.sum(np.square(coeffs))
+
+    energy_cA1 = compute_energy(cA1)
+    energy_cH1 = compute_energy(cH1)
+    energy_cV1 = compute_energy(cV1)
+    energy_cD1 = compute_energy(cD1)
+
+    energy_cA2 = compute_energy(cA2)
+    energy_cH2 = compute_energy(cH2)
+    energy_cV2 = compute_energy(cV2)
+    energy_cD2 = compute_energy(cD2)
+
+    print(f'Energy of Approximation coefficients (Level 1): {energy_cA1}')
+    print(f'Energy of Horizontal detail coefficients (Level 1): {energy_cH1}')
+    print(f'Energy of Vertical detail coefficients (Level 1): {energy_cV1}')
+    print(f'Energy of Diagonal detail coefficients (Level 1): {energy_cD1}')
+
+    print(f'Energy of Approximation coefficients (Level 2): {energy_cA2}')
+    print(f'Energy of Horizontal detail coefficients (Level 2): {energy_cH2}')
+    print(f'Energy of Vertical detail coefficients (Level 2): {energy_cV2}')
+    print(f'Energy of Diagonal detail coefficients (Level 2): {energy_cD2}')
+
+
+
+1] Raw CNN
+
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Load and preprocess the dataset
+train_datagen = ImageDataGenerator(rescale=1./255)
+validate_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\train',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+validate_generator = validate_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\validation',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\test',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical', import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix
+import seaborn as sns
+
+# Load and preprocess the dataset
+train_datagen = ImageDataGenerator(rescale=1./255)
+validate_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\train',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+validate_generator = validate_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\validation',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\FINGERNAIL DATA\test',
+    target_size=(150, 150),
+    batch_size=32,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Build the CNN model with more dropout layers
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
+    MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Dropout(0.25),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+    Dropout(0.5),
+    Dense(3, activation='softmax')
+])
+
+model.compile(optimizer=Adam(learning_rate=0.001),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Early stopping callback
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+# Train the model with early stopping
+history = model.fit(
+    train_generator,
+    epochs=20,
+    validation_data=validate_generator,
+    callbacks=[early_stopping]
+)
+
+# Save the model
+model.save('CNN_fingernail_disease_model.keras')
+
+# Evaluate the model
+loss, accuracy = model.evaluate(test_generator)
+print(f'Test accuracy: {accuracy}')
+
+# Plot accuracy and loss curves
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(1, len(acc) + 1)
+
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(epochs, acc, label='Training accuracy')
+plt.plot(epochs, val_acc, label='Validation accuracy')
+plt.title('Training and validation accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs, loss, label='Training loss')
+plt.plot(epochs, val_loss, label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+
+plt.show()
+
+# Generate classification report and confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+true_labels = test_generator.classes
+
+print('Classification Report')
+print(classification_report(true_labels, y_pred, target_names=list(test_generator.class_indices.keys())))
+
+conf_matrix = confusion_matrix(true_labels, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=list(test_generator.class_indices.keys()), yticklabels=list(test_generator.class_indices.keys()))
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+
+    shuffle=False
+)
+
+# Build the CNN model with more dropout layers
+model = Sequential([
+    Conv2D(32, (3, 3), activation='relu', input_shape=(150, 150, 3)),
+    MaxPooling2D((2, 2)),
+    Conv2D(64, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Dropout(0.25),
+    Conv2D(128, (3, 3), activation='relu'),
+    MaxPooling2D((2, 2)),
+    Flatten(),
+    Dense(512, activation='relu', kernel_regularizer=tf.keras.regularizers.l2(0.001)),
+    Dropout(0.5),
+    Dense(3, activation='softmax')
+])
+
+model.compile(optimizer=Adam(learning_rate=0.001),
+              loss='categorical_crossentropy',
+              metrics=['accuracy'])
+
+# Early stopping callback
+early_stopping = EarlyStopping(monitor='val_loss', patience=5, restore_best_weights=True)
+
+# Train the model with early stopping
+history = model.fit(
+    train_generator,
+    epochs=20,
+    validation_data=validate_generator,
+    callbacks=[early_stopping]
+)
+
+# Save the model
+model.save('CNN_fingernail_disease_model.keras')
+
+# Evaluate the model
+loss, accuracy = model.evaluate(test_generator)
+print(f'Test accuracy: {accuracy}')
+
+# Plot accuracy and loss curves
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs = range(1, len(acc) + 1)
+
+plt.figure(figsize=(12, 4))
+plt.subplot(1, 2, 1)
+plt.plot(epochs, acc, label='Training accuracy')
+plt.plot(epochs, val_acc, label='Validation accuracy')
+plt.title('Training and validation accuracy')
+plt.legend()
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs, loss, label='Training loss')
+plt.plot(epochs, val_loss, label='Validation loss')
+plt.title('Training and validation loss')
+plt.legend()
+
+plt.show()
+
+# Generate classification report and confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+true_labels = test_generator.classes
+
+print('Classification Report')
+print(classification_report(true_labels, y_pred, target_names=list(test_generator.class_indices.keys())))
+
+conf_matrix = confusion_matrix(true_labels, y_pred)
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=list(test_generator.class_indices.keys()), yticklabels=list(test_generator.class_indices.keys()))
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+
+
+
+
+
+
+
+2] MobileNet
+
+import tensorflow as tf
+from tensorflow.keras.applications import MobileNet
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Load and preprocess the dataset
+train_datagen = ImageDataGenerator(rescale=1.0/255.0)
+valid_datagen = ImageDataGenerator(rescale=1.0/255.0)
+test_datagen = ImageDataGenerator(rescale=1.0/255.0)
+
+train_generator = train_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\train',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+valid_generator = valid_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\validation',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\test',
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Load the MobileNet model
+base_model = MobileNet(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+
+# Freeze the base model
+base_model.trainable = False
+
+# Add custom layers
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)
+predictions = Dense(3, activation='softmax')(x)
+
+# Create the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(
+    train_generator,
+    epochs=20,
+    validation_data=valid_generator
+)
+
+# Save the model
+model.save('fingernail_disease_model_mobilenet_01.keras')
+# Evaluate the model
+loss, accuracy = model.evaluate(test_generator)
+print(f'Test Accuracy: {accuracy*100:.2f}%')
+
+# Predictions
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+y_true = test_generator.classes
+
+# Confusion Matrix
+conf_matrix = confusion_matrix(y_true, y_pred)
+class_names = list(test_generator.class_indices.keys())
+
+# Plot Confusion Matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Classification Report
+print(classification_report(y_true, y_pred, target_names=class_names))
+
+# Plot training & validation accuracy and loss
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs_range = range(len(acc))
+
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+3] VGG16
+
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import VGG16
+from tensorflow.keras.models import Model
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.callbacks import EarlyStopping, ModelCheckpoint
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.metrics import confusion_matrix, classification_report
+
+# Define paths for training, validation, and test datasets
+train_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\train'
+val_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\validation'
+test_dir = r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\test'
+
+# Parameters
+img_size = (224, 224)
+batch_size = 32
+num_classes = 3
+
+# Data Generators
+train_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical')
+
+val_generator = val_datagen.flow_from_directory(
+    val_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical')
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=img_size,
+    batch_size=batch_size,
+    class_mode='categorical',
+    shuffle=False)
+
+# Load the VGG16 model
+base_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+
+# Freeze the layers of VGG16
+for layer in base_model.layers:
+    layer.trainable = False
+
+# Adding custom layers
+x = base_model.output
+x = Flatten()(x)
+x = Dense(128, activation='relu')(x)
+x = Dense(num_classes, activation='softmax')(x)
+
+model = Model(inputs=base_model.input, outputs=x)
+
+# Compile the model
+model.compile(optimizer=Adam(arning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Callbacks
+callbacks = [
+    EarlyStopping(patience=5, restore_best_weights=True),
+    ModelCheckpoint('model_vgg16_best.keras', save_best_only=True)
+]
+
+# Train the model
+history = model.fit(
+    train_generator,
+    epochs=20,
+    validation_data=val_generator,
+    callbacks=callbacks)
+
+# Save the final model
+model.save('model_vgg16_final.keras')
+
+# Evaluate the model
+loss, accuracy = model.evaluate(test_generator)
+print(f'Test Accuracy: {accuracy * 100:.2f}%')
+
+# Predictions
+y_true = test_generator.classes
+y_pred = np.argmax(model.predict(test_generator), axis=-1)
+
+# Confusion Matrix
+cm = confusion_matrix(y_true, y_pred)
+class_names = list(test_generator.class_indices.keys())
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=class_names, yticklabels=class_names)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Classification Report
+print(classification_report(y_true, y_pred, target_names=class_names))
+
+# Plotting training history
+plt.figure(figsize=(12, 4))
+
+plt.subplot(1, 2, 1)
+plt.plot(history.history['accuracy'], label='Train Accuracy')
+plt.plot(history.history['val_accuracy'], label='Val Accuracy')
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.title('Accuracy over Epochs')
+
+plt.subplot(1, 2, 2)
+plt.plot(history.history['loss'], label='Train Loss')
+plt.plot(history.history['val_loss'], label='Val Loss')
+plt.xlabel('Epochs')
+plt.ylabel('Loss')
+plt.legend()
+plt.title('Loss over Epochs')
+
+plt.tight_layout()
+plt.show()
+
+
+
+
+
+
+4] VGG19
+
+import tensorflow as tf
+from tensorflow.keras.applications import VGG19
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.layers import Dense, Flatten
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+
+# Define paths for training, validation, and test datasets
+train_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\train'
+val_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\validation'
+test_dir = r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\test'
+
+# Image dimensions
+IMG_HEIGHT = 224
+IMG_WIDTH = 224
+BATCH_SIZE = 32
+
+# Load VGG19 model pre-trained on ImageNet
+base_model = VGG19(weights='imagenet', include_top=False, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3))
+
+# Freeze the base model
+base_model.trainable = False
+
+# Add custom layers on top of VGG19
+x = base_model.output
+x = Flatten()(x)
+x = Dense(128, activation='relu')(x)
+predictions = Dense(3, activation='softmax')(x)
+
+# Create the full model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=1e-4), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Data generators for loading images
+train_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+train_generator = train_datagen.flow_from_directory(
+    train_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),  # Resize images to 224x224
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+val_generator = val_datagen.flow_from_directory(
+    val_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),  # Resize images to 224x224
+    batch_size=BATCH_SIZE,
+    class_mode='categorical'
+)
+
+test_generator = test_datagen.flow_from_directory(
+    test_dir,
+    target_size=(IMG_HEIGHT, IMG_WIDTH),  # Resize images to 224x224
+    batch_size=BATCH_SIZE,
+    class_mode='categorical',
+    shuffle=False
+)
+
+# Train the model
+history = model.fit(train_generator, epochs=20, validation_data=val_generator)
+
+# Save the model
+model.save('fingernail_disease_model_vgg19.keras')
+# Evaluate the model on test data
+test_loss, test_accuracy = model.evaluate(test_generator)
+print(f"Test Accuracy: {test_accuracy}")
+
+# Plot accuracy and loss graphs
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+epochs_range = range(len(acc))
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+# Generate predictions and compute confusion matrix
+y_pred = model.predict(test_generator)
+y_pred_classes = np.argmax(y_pred, axis=1)
+y_true = test_generator.classes
+
+conf_matrix = confusion_matrix(y_true, y_pred_classes)
+
+# Plot confusion matrix
+plt.figure(figsize=(8, 6))
+sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues', xticklabels=test_generator.class_indices.keys(), yticklabels=test_generator.class_indices.keys())
+plt.xlabel('Predicted Label')
+plt.ylabel('True Label')
+plt.title('Confusion Matrix')
+plt.show()
+
+# Print classification report
+print(classification_report(y_true, y_pred_classes, target_names=test_generator.class_indices.keys()))
+
+
+
+5] InceptionV3
+
+import tensorflow as tf
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.applications import InceptionV3
+from tensorflow.keras.layers import Dense, GlobalAveragePooling2D
+from tensorflow.keras.models import Model
+from tensorflow.keras.optimizers import Adam
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from sklearn.metrics import classification_report, confusion_matrix
+import os
+
+# Define paths for training, validation, and test datasets
+train_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\train'
+val_dir =  r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\validation'
+test_dir = r'D:\CNN_Model_01\Fingernail_Disease_Prediction_02\dataset\dataset\test'
+
+# Image data generators without augmentation
+train_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(rescale=1./255)
+test_datagen = ImageDataGenerator(rescale=1./255)
+
+# Data generators
+train_generator = train_datagen.flow_from_directory(train_dir, target_size=(299, 299), batch_size=32, class_mode='categorical')
+val_generator = val_datagen.flow_from_directory(val_dir, target_size=(299, 299), batch_size=32, class_mode='categorical')
+test_generator = test_datagen.flow_from_directory(test_dir, target_size=(299, 299), batch_size=32, class_mode='categorical', shuffle=False)
+
+# Load the InceptionV3 model with pre-trained weights
+base_model = InceptionV3(weights='imagenet', include_top=False)
+
+# Add new layers on top of the base model
+x = base_model.output
+x = GlobalAveragePooling2D()(x)
+x = Dense(1024, activation='relu')(x)
+predictions = Dense(3, activation='softmax')(x)
+
+# Define the model
+model = Model(inputs=base_model.input, outputs=predictions)
+
+# Compile the model
+model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+# Train the model
+history = model.fit(train_generator, epochs=20, validation_data=val_generator)
+
+# Save the model
+model.save('fingernail_disease_model.keras')
+
+# Evaluate the model
+test_loss, test_accuracy = model.evaluate(test_generator)
+print(f'Test accuracy: {test_accuracy}')
+
+# Generate classification report and confusion matrix
+Y_pred = model.predict(test_generator)
+y_pred = np.argmax(Y_pred, axis=1)
+true_classes = test_generator.classes
+class_labels = list(test_generator.class_indices.keys())
+
+print('Classification Report')
+print(classification_report(true_classes, y_pred, target_names=class_labels))
+
+print('Confusion Matrix')
+cm = confusion_matrix(true_classes, y_pred)
+plt.figure(figsize=(10, 7))
+sns.heatmap(cm, annot=True, fmt='d', xticklabels=class_labels, yticklabels=class_labels)
+plt.xlabel('Predicted')
+plt.ylabel('True')
+plt.show()
+
+# Plot accuracy and loss graphs
+acc = history.history['accuracy']
+val_acc = history.history['val_accuracy']
+loss = history.history['loss']
+val_loss = history.history['val_loss']
+
+epochs_range = range(20)
+
+plt.figure(figsize=(12, 6))
+plt.subplot(1, 2, 1)
+plt.plot(epochs_range, acc, label='Training Accuracy')
+plt.plot(epochs_range, val_acc, label='Validation Accuracy')
+plt.legend(loc='lower right')
+plt.title('Training and Validation Accuracy')
+
+plt.subplot(1, 2, 2)
+plt.plot(epochs_range, loss, label='Training Loss')
+plt.plot(epochs_range, val_loss, label='Validation Loss')
+plt.legend(loc='upper right')
+plt.title('Training and Validation Loss')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
