@@ -5,7 +5,7 @@ from tensorflow.keras.preprocessing import image
 
 CLASS_NAMES = ["Healthy", "Liver_disease", "Psoriasis_disease"]
 
-def load_aetherdx_model(model_path="models/Inception_friend_version.keras"):
+def load_aetherdx_model(model_path="aetherdx/model/Inception_friend_version.keras"):
     if not os.path.exists(model_path):
         # fallback to root path if run from scripts
         if os.path.exists(os.path.basename(model_path)):

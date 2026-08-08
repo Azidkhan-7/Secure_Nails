@@ -6,10 +6,10 @@ import numpy as np
 import requests
 
 # Import backend modules
-from backend.inference import load_aetherdx_model, run_inference, preprocess_image
-from backend.gradcam import generate_gradcam, save_and_display_gradcam
-from backend.explanation import get_explanation
-from backend.compliance import generate_decision_id, get_current_timestamp, evaluate_compliance_evidence, generate_audit_report_text
+from aetherdx.inference.inference import load_aetherdx_model, run_inference, preprocess_image
+from xai_compass.xai.gradcam import generate_gradcam, save_and_display_gradcam
+from xai_compass.explanation.explanation import get_explanation
+from xai_compass.governance.compliance import generate_decision_id, get_current_timestamp, evaluate_compliance_evidence, generate_audit_report_text
 
 # -- Streamlit Page Config --
 st.set_page_config(
@@ -23,7 +23,7 @@ st.sidebar.title("Configuration")
 st.sidebar.markdown("Select an existing model to connect to the XAI-COMPASS platform.")
 
 # List models in the models directory
-models_dir = "models"
+models_dir = os.path.join("aetherdx", "model")
 os.makedirs(models_dir, exist_ok=True)
 available_models = [f for f in os.listdir(models_dir) if f.endswith(".keras") or f.endswith(".h5")]
 
@@ -69,7 +69,7 @@ try:
     if health_response.status_code == 200:
         api_status_text = "● Connected"
 except Exception:
-    st.error("XAI-COMPASS API is unavailable. Please start the Model Connector.\n\n`py -3.13 -m uvicorn backend.api:app --reload --port 8000`")
+    st.error("XAI-COMPASS API is unavailable. Please start the Model Connector.\n\n`py -3.13 -m uvicorn xai_compass.api.api:app --reload --port 8000`")
     st.stop()
 
 # -- Model Connector Card --

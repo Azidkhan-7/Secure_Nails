@@ -2,7 +2,7 @@ import os
 import shutil
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
-from backend.inference import load_aetherdx_model, run_inference
+from aetherdx.inference.inference import load_aetherdx_model, run_inference
 
 # Create FastAPI app
 app = FastAPI(
@@ -19,7 +19,7 @@ async def startup_event():
     global model
     try:
         print("Loading AetherDx model...")
-        model_path = os.path.join("models", "Inception_friend_version.keras")
+        model_path = os.path.join("aetherdx", "model", "Inception_friend_version.keras")
         model = load_aetherdx_model(model_path)
         print("Model loaded successfully.")
     except Exception as e:

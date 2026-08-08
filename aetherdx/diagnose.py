@@ -2,7 +2,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing import image
 import numpy as np
 
-model = load_model("models/Inception_friend_version.keras")
+model = load_model("aetherdx/model/Inception_friend_version.keras")
 
 CLASS_NAMES = ["Healthy", "Liver_disease", "Psoriasis_disease"]
 
