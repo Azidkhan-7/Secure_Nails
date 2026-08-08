@@ -3,3 +3,6 @@ numpy
 Pillow
 opencv-python
 streamlit
+fastapi
+uvicorn
+python-multipart

@@ -3,9 +3,10 @@ import os
 import cv2
 from PIL import Image
 import numpy as np
+import requests
 
 # Import backend modules
-from backend.inference import load_aetherdx_model, run_inference
+from backend.inference import load_aetherdx_model, run_inference, preprocess_image
 from backend.gradcam import generate_gradcam, save_and_display_gradcam
 from backend.explanation import get_explanation
 from backend.compliance import generate_decision_id, get_current_timestamp, evaluate_compliance_evidence, generate_audit_report_text
@@ -60,13 +61,24 @@ EXISTING MODEL &rarr; MODEL CONNECTOR &rarr; XAI-COMPASS &rarr; EXPLAIN &rarr; T
 """, unsafe_allow_html=True)
 st.markdown("---")
 
+# -- API Health Check --
+api_url = "http://127.0.0.1:8000"
+api_status_text = "🔴 Disconnected"
+try:
+    health_response = requests.get(f"{api_url}/health", timeout=2)
+    if health_response.status_code == 200:
+        api_status_text = "● Connected"
+except Exception:
+    st.error("XAI-COMPASS API is unavailable. Please start the Model Connector.\n\n`py -3.13 -m uvicorn backend.api:app --reload --port 8000`")
+    st.stop()
+
 # -- Model Connector Card --
 st.markdown("### CONNECTED AI MODEL")
 st.info(f"""
 **Model:** {selected_model_file}  
 **Domain:** Healthcare  
-**Status:** ● Connected  
-**Integration:** Existing AI Model  
+**Integration:** Existing AI Model via API  
+**API Status:** {api_status_text}  
 """)
 st.caption("Designed as a governance layer around existing AI/ML models. AetherDx is the current healthcare reference implementation.")
 
@@ -92,6 +104,12 @@ if 'decision_id' not in st.session_state:
     st.session_state.decision_id = ""
 if 'timestamp' not in st.session_state:
     st.session_state.timestamp = ""
+if 'total_decisions' not in st.session_state:
+    st.session_state.total_decisions = 0
+if 'xai_generated' not in st.session_state:
+    st.session_state.xai_generated = 0
+if 'evidence_complete' not in st.session_state:
+    st.session_state.evidence_complete = 0
 
 # -- Image Upload Section --
 st.markdown("### MODEL INPUT")
@@ -105,6 +123,7 @@ if uploaded_file is not None:
         st.session_state.decision_id = generate_decision_id()
         st.session_state.timestamp = get_current_timestamp()
         st.session_state.analysis_done = True
+        st.session_state.total_decisions += 1
         
 if uploaded_file is not None and st.session_state.analysis_done:
     with st.spinner("Analyzing image and generating explanation..."):
@@ -117,10 +136,24 @@ if uploaded_file is not None and st.session_state.analysis_done:
             image = Image.open(uploaded_file).convert("RGB")
             image.save(temp_image_path)
             
-            # 1. Run Inference
-            result = run_inference(model, temp_image_path)
-            prediction = result["prediction"]
-            confidence = result["confidence"]
+            # 1. Run API Inference (Primary Prediction)
+            try:
+                with open(temp_image_path, "rb") as f:
+                    response = requests.post(
+                        f"{api_url}/predict",
+                        files={"file": (os.path.basename(temp_image_path), f, "image/jpeg")},
+                        timeout=30
+                    )
+                response.raise_for_status()
+                api_result = response.json()
+            except requests.exceptions.RequestException as req_err:
+                st.error(f"API Prediction Request Failed: {req_err}")
+                st.stop()
+            
+            # Use API response for AI decision
+            prediction = api_result.get("display_prediction", api_result.get("prediction", "Unknown"))
+            
+            confidence = api_result.get("probability", 0.0)
             confidence_percent = f"{confidence * 100:.2f}"
             
             st.markdown("---")
@@ -128,7 +161,8 @@ if uploaded_file is not None and st.session_state.analysis_done:
             # 2. Display AI Decision
             st.markdown("### AI DECISION")
             st.markdown(f"**Prediction:** {prediction}")
-            st.markdown(f"**Confidence:** {confidence_percent}%")
+            st.markdown(f"**Model Output Probability:** ~{confidence_percent}%")
+            st.caption("Note: Model output probability does not represent medical certainty.")
             st.markdown(f"**Model:** {selected_model_file}")
             st.markdown("**Domain:** Healthcare")
             st.markdown(f"**Decision ID:** {st.session_state.decision_id}")
@@ -144,7 +178,8 @@ if uploaded_file is not None and st.session_state.analysis_done:
                 os.makedirs(xai_dir, exist_ok=True)
                 cam_path = os.path.join(xai_dir, "gradcam_overlay.jpg")
                 
-                heatmap, _ = generate_gradcam(model, result["preprocessed_image"], layer_name="mixed10")
+                preprocessed_img_array = preprocess_image(temp_image_path)
+                heatmap, _ = generate_gradcam(model, preprocessed_img_array, layer_name="mixed10")
                 save_and_display_gradcam(temp_image_path, heatmap, cam_path=cam_path, alpha=0.4)
                 
                 original_img = Image.open(temp_image_path)
@@ -152,13 +187,17 @@ if uploaded_file is not None and st.session_state.analysis_done:
                 
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.image(original_img, caption="Original Input", use_container_width=True)
+                    st.image(original_img, caption="Original Image", use_container_width=True)
                 with col2:
                     st.image(overlay_img, caption="Grad-CAM Evidence", use_container_width=True)
                     
                 st.info("The highlighted regions indicate image areas that contributed most strongly to the model's prediction.")
                 gradcam_success = True
                 xai_status = "Generated"
+                
+                # Update Monitoring metric
+                st.session_state.xai_generated = max(st.session_state.xai_generated, st.session_state.total_decisions)
+                
             except Exception as xai_e:
                 st.warning("XAI visualization temporarily unavailable.")
                 st.error(f"Grad-CAM Error: {str(xai_e)}")
@@ -185,7 +224,7 @@ if uploaded_file is not None and st.session_state.analysis_done:
             st.markdown("---")
             st.markdown("### AI GOVERNANCE & COMPLIANCE EVIDENCE")
             
-            checklist, score = evaluate_compliance_evidence(
+            checklist, passed_checks, total_checks, score = evaluate_compliance_evidence(
                 has_prediction=True,
                 has_gradcam=gradcam_success,
                 has_explanation=True
@@ -197,10 +236,23 @@ if uploaded_file is not None and st.session_state.analysis_done:
                 else:
                     st.markdown(f"🔴 **{check}**")
                     
-            st.markdown(f"## Evidence Score: {score}%")
-            st.caption("Evidence score indicates availability of explainability and audit evidence. It is not a legal certification.")
+            st.markdown(f"#### {passed_checks}/{total_checks} Evidence Checks Passed")
+            st.markdown(f"## Evidence Readiness: {score}%")
+            st.caption("This score indicates the availability of configured explainability and audit evidence. It does not constitute legal or regulatory certification.")
             
-            # 6. Audit Section
+            # Update Evidence metric if all passed
+            if score == 100:
+                st.session_state.evidence_complete = max(st.session_state.evidence_complete, st.session_state.total_decisions)
+                
+            # 6. Decision Monitoring Panel
+            st.markdown("---")
+            st.markdown("### DECISION MONITORING")
+            st.markdown(f"**Total Decisions:** {st.session_state.total_decisions}")
+            st.markdown(f"**XAI Generated:** {st.session_state.xai_generated}")
+            st.markdown(f"**Evidence Complete:** {st.session_state.evidence_complete}")
+            st.markdown("**Human Review:** Required")
+            
+            # 7. Audit Section
             st.markdown("---")
             st.markdown("### AUDIT-READY DECISION RECORD")
             
@@ -209,10 +261,11 @@ if uploaded_file is not None and st.session_state.analysis_done:
             st.markdown(f"**Timestamp:** {st.session_state.timestamp}")
             st.markdown(f"**Model:** {selected_model_file}")
             st.markdown(f"**Prediction:** {prediction}")
-            st.markdown(f"**Confidence:** {confidence_percent}%")
+            st.markdown(f"**Model Output Probability:** ~{confidence_percent}%")
             st.markdown("**XAI Method:** Grad-CAM")
+            st.markdown("**XAI Evidence:** Original Input, Grad-CAM Heatmap, Grad-CAM Overlay")
             st.markdown(f"**Language:** English (Default for report)")
-            st.markdown("**Compliance evidence:** Available")
+            st.markdown("**Compliance Evidence:** Available")
             
             # Create report text
             report_text = generate_audit_report_text(
@@ -224,6 +277,8 @@ if uploaded_file is not None and st.session_state.analysis_done:
                 explanation_lang="English",
                 explanation_text=en_exp,
                 checklist=checklist,
+                passed_checks=passed_checks,
+                total_checks=total_checks,
                 score=score,
                 model_name=selected_model_file
             )
