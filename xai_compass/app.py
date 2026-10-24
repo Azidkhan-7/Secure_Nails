@@ -136,7 +136,7 @@ with col_right:
     if not uploaded_file or not st.session_state.analysis_done:
         st.info("Upload an image and click 'ANALYZE IMAGE' to generate a prediction and compliance report.")
     else:
-        with st.spinner("Analyzing via API..."):
+        with st.spinner("Analyzing via AI model connector (processing InceptionV3 forward pass on CPU, please wait ~1 min)..."):
             temp_dir = "outputs"
             os.makedirs(temp_dir, exist_ok=True)
             temp_image_path = os.path.join(temp_dir, "temp_upload.jpg")
@@ -150,7 +150,7 @@ with col_right:
                     response = requests.post(
                         f"{api_url}/predict",
                         files={"file": (os.path.basename(temp_image_path), f, "image/jpeg")},
-                        timeout=30
+                        timeout=180
                     )
                 response.raise_for_status()
                 api_result = response.json()
