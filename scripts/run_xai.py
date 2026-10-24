@@ -5,8 +5,8 @@ import tensorflow as tf
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from backend.inference import load_aetherdx_model, run_inference
-from backend.gradcam import generate_gradcam, save_and_display_gradcam
+from aetherdx.inference.inference import load_aetherdx_model, run_inference
+from xai_compass.xai.gradcam import generate_gradcam, save_and_display_gradcam
 
 def main():
     parser = argparse.ArgumentParser(description="Run AetherDx Model with Grad-CAM")
@@ -19,7 +19,10 @@ def main():
         sys.exit(1)
 
     print("Loading model...")
-    model_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "Inception_friend_version.keras")
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    model_path = os.path.join(root_dir, "aetherdx", "model", "Inception_friend_version.keras")
+    if not os.path.exists(model_path):
+        model_path = os.path.join(root_dir, "models", "Inception_friend_version.keras")
     model = load_aetherdx_model(model_path)
     
     print("Running inference...")

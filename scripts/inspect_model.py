@@ -27,4 +27,7 @@ def inspect_model(model_path):
           "visual features while maintaining spatial information necessary for generating a heatmap.")
 
 if __name__ == "__main__":
-    inspect_model("models/Inception_friend_version.keras")
+    target = os.path.join("aetherdx", "model", "Inception_friend_version.keras")
+    if not os.path.exists(target):
+        target = os.path.join("models", "Inception_friend_version.keras")
+    inspect_model(target)

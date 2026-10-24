@@ -1,7 +1,7 @@
 import os
 from PIL import Image
-from backend.inference import load_aetherdx_model, run_inference
-from backend.gradcam import generate_gradcam, save_and_display_gradcam
+from aetherdx.inference.inference import load_aetherdx_model, run_inference
+from xai_compass.xai.gradcam import generate_gradcam, save_and_display_gradcam
 
 model = load_aetherdx_model("Inception_friend_version.keras")
 img_path = r"C:\Users\LOQ\Desktop\Neha Project\Shree Ganesh\Bhuvan dataset\New_dataset\New_dataset\Train\Healthy\WhatsApp Image 2026-07-21 at 11.22.20 PM.jpeg"
