@@ -1,5 +1,11 @@
 import os
+import sys
 import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from aetherdx.inference.inference import load_aetherdx_model, run_inference
@@ -19,7 +25,9 @@ async def startup_event():
     global model
     try:
         print("Loading AetherDx model...")
-        model_path = os.path.join("aetherdx", "model", "Inception_friend_version.keras")
+        model_path = os.path.join(ROOT_DIR, "aetherdx", "model", "Inception_friend_version.keras")
+        if not os.path.exists(model_path):
+            model_path = os.path.join(ROOT_DIR, "models", "Inception_friend_version.keras")
         model = load_aetherdx_model(model_path)
         print("Model loaded successfully.")
     except Exception as e:

@@ -1,9 +1,15 @@
 import streamlit as st
 import os
+import sys
 import cv2
 from PIL import Image
 import numpy as np
 import requests
+
+# Ensure repository root is on sys.path
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
 
 # Import backend modules
 from aetherdx.inference.inference import load_aetherdx_model, run_inference, preprocess_image
@@ -51,7 +57,11 @@ st.sidebar.markdown(f"<h2>XAI-COMPASS</h2>", unsafe_allow_html=True)
 st.sidebar.markdown(f"<div class='{api_badge_class}'>● {api_status_text}</div><br>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
-models_dir = os.path.join("aetherdx", "model")
+models_dir = os.path.join(ROOT_DIR, "aetherdx", "model")
+if not os.path.exists(models_dir) or not any(f.endswith(".keras") or f.endswith(".h5") for f in os.listdir(models_dir)):
+    models_alt = os.path.join(ROOT_DIR, "models")
+    if os.path.exists(models_alt) and any(f.endswith(".keras") or f.endswith(".h5") for f in os.listdir(models_alt)):
+        models_dir = models_alt
 os.makedirs(models_dir, exist_ok=True)
 available_models = [f for f in os.listdir(models_dir) if f.endswith(".keras") or f.endswith(".h5")]
 
